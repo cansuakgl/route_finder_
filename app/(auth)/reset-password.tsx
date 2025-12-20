@@ -68,7 +68,7 @@ export default function ResetPasswordScreen() {
           </Text>
           <AppButton
             title="Continue to App"
-            onPress={() => router.replace('/')}
+            onPress={() => router.replace('/(tabs)')}
             mode="contained"
             buttonColor={colors.primary}
             textColor={colors.text}

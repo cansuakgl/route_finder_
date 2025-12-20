@@ -74,7 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!user && !inAuthGroup) {
       router.replace('/(auth)/signin');
     } else if (user && inAuthGroup) {
-      router.replace('/');
+      router.replace('/(tabs)');
     }
   }, [user, segments, isLoading, isPasswordRecovery]);
 

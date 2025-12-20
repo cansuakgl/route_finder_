@@ -63,8 +63,6 @@ export async function getSegmentToPoint(
 
   return data;
 }
-
-
 export const transitSegmentsService: TransitSegmentsService = {
   getSegmentsByRouteId,
   getSegmentFromPoint,
