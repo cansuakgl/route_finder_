@@ -1,4 +1,10 @@
-CREATE VIEW routes_summary AS
+DROP VIEW IF EXISTS routes_summary;
+DROP VIEW IF EXISTS route_points_with_connections;
+DROP VIEW IF EXISTS user_route_stats;
+
+CREATE VIEW routes_summary
+WITH (security_invoker = true)
+AS
 SELECT 
   r.id,
   r.user_id,
@@ -15,20 +21,28 @@ LEFT JOIN route_points rp ON rp.route_id = r.id
 LEFT JOIN transit_segments ts ON ts.route_id = r.id
 GROUP BY r.id, r.user_id, r.name, r.route_description, r.created_at, r.updated_at;
 
-CREATE VIEW route_points_with_connections AS
+CREATE VIEW route_points_with_connections
+WITH (security_invoker = true)
+AS
 SELECT 
   rp.*,
-  ts_out.id as outgoing_segment_id,
-  ts_out.to_point_id as next_point_id,
-  ts_out.transit_type as next_transit_type,
-  ts_in.id as incoming_segment_id,
-  ts_in.from_point_id as previous_point_id,
-  ts_in.transit_type as previous_transit_type
-FROM route_points rp
-LEFT JOIN transit_segments ts_out ON ts_out.from_point_id = rp.id
-LEFT JOIN transit_segments ts_in ON ts_in.to_point_id = rp.id;
+  (SELECT row_to_json(t) FROM (
+    SELECT id, to_point_id as next_point_id, transit_type, distance_km, duration_minutes
+    FROM transit_segments 
+    WHERE from_point_id = rp.id 
+    LIMIT 1
+  ) t) as outgoing_segment,
+  (SELECT row_to_json(t) FROM (
+    SELECT id, from_point_id as previous_point_id, transit_type, distance_km, duration_minutes
+    FROM transit_segments 
+    WHERE to_point_id = rp.id 
+    LIMIT 1
+  ) t) as incoming_segment
+FROM route_points rp;
 
-CREATE VIEW user_route_stats AS
+CREATE VIEW user_route_stats
+WITH (security_invoker = true)
+AS
 SELECT 
   r.user_id,
   COUNT(DISTINCT r.id) as total_routes,
