@@ -1,5 +1,5 @@
 import { db } from '@/lib/services/database';
-import { fetchLlmRecommendation } from '@/lib/services/llm';
+import { getLocationSuggestions } from '@/lib/services/llm';
 import { getCoordsFromText, getRouteDirections } from '@/lib/services/map';
 import type { RoutePoint, RoutePointInput, TransitSegment, TransitSegmentInput, TransitType } from '@/lib/types/database';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -163,6 +163,7 @@ export default function RouteEditScreen() {
       }
 
       const allCoordinates: [number, number][] = [];
+      const segmentUpdates: { index: number; duration_minutes: number; distance_km: number }[] = [];
 
       for (let i = 0; i < validRoutePoints.length - 1; i++) {
         const fromPoint = validRoutePoints[i];
@@ -182,10 +183,16 @@ export default function RouteEditScreen() {
             profile as 'driving' | 'walking' | 'cycling'
           );
 
-          console.log('Route result:', route ? 'found' : 'null', route?.geometry?.coordinates?.length || 0, 'coords');
+          console.log('Route result:', route ? 'found' : 'null', route?.geometry?.coordinates?.length || 0, 'coords', 'duration:', route?.duration_minutes, 'min');
 
           if (route?.geometry?.coordinates) {
             allCoordinates.push(...route.geometry.coordinates);
+            // Store duration and distance from Mapbox
+            segmentUpdates.push({
+              index: i,
+              duration_minutes: route.duration_minutes,
+              distance_km: route.distance_km,
+            });
           } else {
             // Fallback: draw straight line if no route found
             console.log('Using fallback straight line');
@@ -202,6 +209,23 @@ export default function RouteEditScreen() {
             [toPoint.longitude!, toPoint.latitude!]
           );
         }
+      }
+
+      // Update segment durations from Mapbox data
+      if (segmentUpdates.length > 0) {
+        setTransitSegments(prevSegments => {
+          const newSegments = [...prevSegments];
+          for (const update of segmentUpdates) {
+            if (newSegments[update.index]) {
+              newSegments[update.index] = {
+                ...newSegments[update.index],
+                duration_minutes: update.duration_minutes,
+                distance_km: update.distance_km,
+              };
+            }
+          }
+          return newSegments;
+        });
       }
 
       console.log('Total coordinates for route line:', allCoordinates.length);
@@ -275,20 +299,20 @@ export default function RouteEditScreen() {
     
     setIsSearching(true);
     try {
-      const result = await fetchLlmRecommendation(searchText, []);
+      const places = await getLocationSuggestions(searchText);
 
       const newPoints: RoutePoint[] = [];
       const startPosition = routePoints.length;
       
-      for (let idx = 0; idx < result.recommendations.length; idx++) {
-        const item = result.recommendations[idx];
-        const coords = await getCoordsFromText(item.title);
+      for (let idx = 0; idx < places.length; idx++) {
+        const item = places[idx];
+        const coords = await getCoordsFromText(item.name);
         newPoints.push({
           id: `llm-${Math.random().toString(36).substr(2, 9)}`,
           route_id: routeId || '',
           position: startPosition + idx,
-          name: item.title,
-          address: item.description || null,
+          name: item.name,
+          address: item.address || null,
           latitude: coords?.[1] || null,
           longitude: coords?.[0] || null,
           tags: null,

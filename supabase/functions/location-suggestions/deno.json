@@ -1,0 +1,8 @@
+{
+  "imports": {
+    "@google/genai": "npm:@google/genai",
+    "zod": "npm:zod",
+    "zod-to-json-schema": "npm:zod-to-json-schema"
+  }
+}
+
