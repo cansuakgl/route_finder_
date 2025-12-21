@@ -31,6 +31,17 @@ export const getCoordsFromText = async (
   return null;
 };
 
+export interface RouteDirectionsResult {
+  geometry: {
+    type: string;
+    coordinates: [number, number][];
+  };
+  duration: number; // duration in seconds
+  distance: number; // distance in meters
+  duration_minutes: number; // duration in minutes (rounded)
+  distance_km: number; // distance in kilometers
+}
+
 /**
  * Get route directions between two coordinates
  */
@@ -38,7 +49,7 @@ export const getRouteDirections = async (
   start: [number, number],
   end: [number, number],
   profile: 'driving' | 'walking' | 'cycling' = 'driving'
-): Promise<any> => {
+): Promise<RouteDirectionsResult | null> => {
   if (!ACCESS_TOKEN) {
     console.error('Error: Mapbox Token not found.');
     return null;
@@ -58,9 +69,19 @@ export const getRouteDirections = async (
     
     if (json.code !== 'Ok') {
       console.error('Directions API error:', json.message || json.code);
+      return null;
     }
     
-    return json.routes?.[0] || null;
+    const route = json.routes?.[0];
+    if (!route) return null;
+
+    return {
+      geometry: route.geometry,
+      duration: route.duration, // seconds
+      distance: route.distance, // meters
+      duration_minutes: Math.round(route.duration / 60),
+      distance_km: Math.round((route.distance / 1000) * 10) / 10, // 1 decimal place
+    };
   } catch (error) {
     console.error('Directions error:', error);
     return null;

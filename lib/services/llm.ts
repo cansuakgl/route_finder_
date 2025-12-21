@@ -1,49 +1,30 @@
-// LLM service for route recommendations
+export async function getLocationSuggestions(userQuery: string) {
+  try {
+    const response = await fetch(
+      "https://twjeirfizttdnfanijpe.functions.supabase.co/location-suggestions",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ query: userQuery }),
+      }
+    );
 
-interface LockedLocation {
-  id: string;
-  title: string;
-  coords?: [number, number];
-  lockStatus?: string | null;
+    if (!response.ok) {
+      throw new Error(`Supabase function error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+
+    // Return exactly the same type as before: array of { name, address }
+    return data.places as Array<{ name: string; address: string }>;
+  } catch (err) {
+    console.error("Failed to fetch location suggestions:", err);
+    return []; // keep return type consistent on error
+  }
 }
 
-interface RouteRecommendation {
-  id: string;
-  title: string;
-  description: string;
-  transportToNext?: string;
-  transportProfile?: string;
-}
 
-interface LLMResponse {
-  routeName: string;
-  recommendations: RouteRecommendation[];
-}
 
-export const fetchLlmRecommendation = async (
-  userPrompt: string,
-  lockedLocations: LockedLocation[] = []
-): Promise<LLMResponse> => {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 500));
 
-  // Split the prompt by comma and clean up the names
-  // Example: "Pendik YHT, Maltepe Meydan" -> ["Pendik YHT", "Maltepe Meydan"]
-  const names = userPrompt
-    .split(',')
-    .map(name => name.trim())
-    .filter(name => name.length > 0);
-
-  const recommendations: RouteRecommendation[] = names.map((name) => ({
-    id: Math.random().toString(36).substr(2, 9),
-    title: name,
-    description: `${name} için oluşturulan durak.`,
-    transportToNext: 'Araba',
-    transportProfile: 'driving'
-  }));
-
-  return {
-    routeName: `${userPrompt} Rotası`,
-    recommendations
-  };
-};

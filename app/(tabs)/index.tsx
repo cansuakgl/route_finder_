@@ -1,20 +1,20 @@
 import { Camera, MapView } from '@/components/map-view-wrapper';
 import { useAuth } from '@/context/auth-context';
 import { db } from '@/lib/services/database';
-import { fetchLlmRecommendation } from '@/lib/services/llm';
+import { getLocationSuggestions } from '@/lib/services/llm';
 import { getCoordsFromText } from '@/lib/services/map';
 import type { Route, RoutePoint, TransitSegment } from '@/lib/types/database';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    FlatList,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 export default function ChatScreen() {
@@ -67,18 +67,18 @@ export default function ChatScreen() {
     
     setIsLoading(true);
     try {
-      const result = await fetchLlmRecommendation(searchText, []);
+      const places = await getLocationSuggestions(searchText);
 
       const routePoints: RoutePoint[] = [];
-      for (let idx = 0; idx < result.recommendations.length; idx++) {
-        const item = result.recommendations[idx];
-        const coords = await getCoordsFromText(item.title);
+      for (let idx = 0; idx < places.length; idx++) {
+        const item = places[idx];
+        const coords = await getCoordsFromText(item.name);
         routePoints.push({
           id: `llm-${Math.random().toString(36).substr(2, 9)}`,
           route_id: '',
           position: idx,
-          name: item.title,
-          address: item.description || null,
+          name: item.name,
+          address: item.address || null,
           latitude: coords?.[1] || null,
           longitude: coords?.[0] || null,
           tags: null,
