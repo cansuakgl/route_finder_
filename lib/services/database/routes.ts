@@ -1,11 +1,11 @@
 import { supabase } from "../../supabase";
 import type {
-    Route,
-    RouteDetails,
-    RouteMetrics,
-    RoutePointInput,
-    RouteSummary,
-    TransitSegmentInput,
+  Route,
+  RouteDetails,
+  RouteMetrics,
+  RoutePointInput,
+  RouteSummary,
+  TransitSegmentInput,
 } from "../../types/database";
 
 export interface RoutesService {
@@ -18,6 +18,8 @@ export interface RoutesService {
   createRoute: (params: CreateRouteParams) => Promise<string>;
   updateRoute: (params: UpdateRouteParams) => Promise<boolean>;
   deleteRoute: (routeId: string) => Promise<boolean>;
+  getFavoriteRoutes: () => Promise<Route[]>;
+  toggleRouteFavorite: (routeId: string, isFavorite: boolean) => Promise<boolean>;
 }
 export interface CreateRouteParams {
   name: string;
@@ -26,6 +28,7 @@ export interface CreateRouteParams {
   constraints?: string[] | null;
   routePoints?: RoutePointInput[];
   transitSegments?: TransitSegmentInput[];
+  isFavorite?: boolean;
 }
 export interface UpdateRouteParams {
   routeId: string;
@@ -35,6 +38,7 @@ export interface UpdateRouteParams {
   constraints?: string[] | null;
   routePoints?: RoutePointInput[];
   transitSegments?: TransitSegmentInput[];
+  isFavorite?: boolean;
 }
 
 export async function getRoutes(): Promise<Route[]> {
@@ -119,19 +123,61 @@ export async function createRoute(params: CreateRouteParams): Promise<string> {
     throw new Error("User must be authenticated to create a route");
   }
 
+  // Convert to JSONB-compatible payload (plain objects/arrays only)
+  const routePointsJsonb = (params.routePoints ?? []).map((point) => ({
+    name: String(point.name || ''),
+    address: point.address ? String(point.address) : null,
+    latitude:
+      point.latitude !== undefined && point.latitude !== null
+        ? Number(point.latitude)
+        : null,
+    longitude:
+      point.longitude !== undefined && point.longitude !== null
+        ? Number(point.longitude)
+        : null,
+    tags: point.tags ? [...point.tags] : null,
+  }));
+
+  const transitSegmentsJsonb = (params.transitSegments ?? []).map((segment) => ({
+    from_position: Number(segment.from_position),
+    to_position: Number(segment.to_position),
+    transit_type: String(segment.transit_type),
+    distance_km:
+      segment.distance_km !== undefined && segment.distance_km !== null
+        ? Number(segment.distance_km)
+        : null,
+    duration_minutes:
+      segment.duration_minutes !== undefined && segment.duration_minutes !== null
+        ? Number(segment.duration_minutes)
+        : null,
+    notes: segment.notes ? String(segment.notes) : null,
+  }));
+
+  // Deep-clone to guarantee plain JSON (prevents accidental class instances/undefined)
+  const routePointsPayload = JSON.parse(JSON.stringify(routePointsJsonb));
+  const transitSegmentsPayload = JSON.parse(JSON.stringify(transitSegmentsJsonb));
+
+  console.log('Calling create_route RPC with:', {
+    p_user_id: user.id,
+    p_name: params.name,
+    p_route_points: routePointsPayload,
+    p_transit_segments: transitSegmentsPayload,
+  });
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (supabase.rpc as any)("create_route", {
+  const { data, error } = await (supabase.rpc as any)('create_route', {
     p_user_id: user.id,
     p_name: params.name,
     p_route_description: params.routeDescription ?? null,
     p_session_description: params.sessionDescription ?? null,
     p_constraints: params.constraints ?? null,
-    p_route_points: params.routePoints ?? [],
-    p_transit_segments: params.transitSegments ?? [],
+    p_route_points: routePointsPayload,
+    p_transit_segments: transitSegmentsPayload,
+    p_is_favorite: params.isFavorite ?? false,
   });
 
   if (error) {
-    console.error("Error creating route:", error);
+    console.error('Error creating route:', error);
     throw new Error(error.message);
   }
 
@@ -139,19 +185,61 @@ export async function createRoute(params: CreateRouteParams): Promise<string> {
 }
 
 export async function updateRoute(params: UpdateRouteParams): Promise<boolean> {
+  // Convert to JSONB-compatible format - must be plain objects/arrays
+  const routePointsJsonb = (params.routePoints ?? []).map((point) => ({
+    name: String(point.name || ''),
+    address: point.address ? String(point.address) : null,
+    latitude:
+      point.latitude !== undefined && point.latitude !== null
+        ? Number(point.latitude)
+        : null,
+    longitude:
+      point.longitude !== undefined && point.longitude !== null
+        ? Number(point.longitude)
+        : null,
+    tags: point.tags ? [...point.tags] : null,
+  }));
+
+  const transitSegmentsJsonb = (params.transitSegments ?? []).map((segment) => ({
+    from_position: Number(segment.from_position),
+    to_position: Number(segment.to_position),
+    transit_type: String(segment.transit_type),
+    distance_km:
+      segment.distance_km !== undefined && segment.distance_km !== null
+        ? Number(segment.distance_km)
+        : null,
+    duration_minutes:
+      segment.duration_minutes !== undefined && segment.duration_minutes !== null
+        ? Number(segment.duration_minutes)
+        : null,
+    notes: segment.notes ? String(segment.notes) : null,
+  }));
+
+  // Deep-clone to guarantee plain JSON
+  const routePointsPayload = JSON.parse(JSON.stringify(routePointsJsonb));
+  const transitSegmentsPayload = JSON.parse(JSON.stringify(transitSegmentsJsonb));
+
+  console.log('Calling update_route RPC with:', {
+    p_route_id: params.routeId,
+    p_name: params.name,
+    p_route_points: routePointsPayload,
+    p_transit_segments: transitSegmentsPayload,
+  });
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (supabase.rpc as any)("update_route", {
+  const { data, error } = await (supabase.rpc as any)('update_route', {
     p_route_id: params.routeId,
     p_name: params.name,
     p_route_description: params.routeDescription ?? null,
     p_session_description: params.sessionDescription ?? null,
     p_constraints: params.constraints ?? null,
-    p_route_points: params.routePoints ?? [],
-    p_transit_segments: params.transitSegments ?? [],
+    p_route_points: routePointsPayload,
+    p_transit_segments: transitSegmentsPayload,
+    p_is_favorite: params.isFavorite ?? false,
   });
 
   if (error) {
-    console.error("Error updating route:", error);
+    console.error('Error updating route:', error);
     throw new Error(error.message);
   }
 
@@ -184,6 +272,35 @@ export async function searchRoutes(query: string): Promise<Route[]> {
   return data ?? [];
 }
 
+export async function getFavoriteRoutes(): Promise<Route[]> {
+  const { data, error } = await supabase
+    .from("routes")
+    .select("*")
+    .eq("is_favorite", true)
+    .order("updated_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching favorite routes:", error);
+    return [];
+  }
+
+  return data ?? [];
+}
+
+export async function toggleRouteFavorite(routeId: string, isFavorite: boolean): Promise<boolean> {
+  const { error } = await supabase
+    .from("routes")
+    .update({ is_favorite: isFavorite })
+    .eq("id", routeId);
+
+  if (error) {
+    console.error("Error toggling route favorite:", error);
+    throw new Error(error.message);
+  }
+
+  return true;
+}
+
 export const routesService: RoutesService = {
   getRoutes,
   getRoutesSummary,
@@ -194,4 +311,6 @@ export const routesService: RoutesService = {
   createRoute,
   updateRoute,
   deleteRoute,
+  getFavoriteRoutes,
+  toggleRouteFavorite,
 };

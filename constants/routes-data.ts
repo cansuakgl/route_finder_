@@ -1,14 +1,12 @@
-// Sample routes data
+// Sample routes data for favorites display
+// Note: This is a simplified interface for the UI layer
+// Full route data should come from database using RouteDetails type
 
 export interface Route {
   id: string;
   title: string;
   description: string;
-  stops?: string[];
-  coords?: [number, number];
-  lockStatus?: string | null;
-  transportToNext?: string;
-  transportProfile?: string;
+  stops?: string[];  // Legacy: will be replaced with actual route_points from database
 }
 
 export const ROUTES: Route[] = [

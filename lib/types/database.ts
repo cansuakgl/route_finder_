@@ -29,6 +29,7 @@ export interface Database {
           user_id: string;
           name: string;
           route_description: string | null;
+          is_favorite: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -37,6 +38,7 @@ export interface Database {
           user_id: string;
           name: string;
           route_description?: string | null;
+          is_favorite?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -45,6 +47,7 @@ export interface Database {
           user_id?: string;
           name?: string;
           route_description?: string | null;
+          is_favorite?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -156,6 +159,7 @@ export interface Database {
           user_id: string;
           name: string;
           route_description: string | null;
+          is_favorite: boolean;
           created_at: string;
           updated_at: string;
           point_count: number;
