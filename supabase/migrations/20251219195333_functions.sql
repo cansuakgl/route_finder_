@@ -131,6 +131,7 @@ BEGIN
   VALUES (v_route_id, p_session_description, p_constraints)
   RETURNING id INTO v_session_id;
 
+  v_point_ids := ARRAY[]::UUID[];
   v_position := 0;
   FOR v_point IN SELECT * FROM jsonb_array_elements(p_route_points)
   LOOP
@@ -242,6 +243,7 @@ BEGIN
   IF v_points_changed THEN
     DELETE FROM route_points WHERE route_id = p_route_id;
     
+    v_point_ids := ARRAY[]::UUID[];
     v_position := 0;
     FOR v_point IN SELECT * FROM jsonb_array_elements(p_route_points)
     LOOP

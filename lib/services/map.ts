@@ -49,8 +49,16 @@ export const getRouteDirections = async (
       ','
     )};${end.join(',')}?geometries=geojson&access_token=${ACCESS_TOKEN}`;
     
+    console.log('Fetching directions from URL:', url.replace(ACCESS_TOKEN, 'TOKEN_HIDDEN'));
+    
     const response = await fetch(url);
     const json = await response.json();
+    
+    console.log('Directions API response:', json.code, json.routes?.length || 0, 'routes');
+    
+    if (json.code !== 'Ok') {
+      console.error('Directions API error:', json.message || json.code);
+    }
     
     return json.routes?.[0] || null;
   } catch (error) {

@@ -73,7 +73,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (!user && !inAuthGroup) {
       router.replace('/(auth)/signin');
-    } else if (user && inAuthGroup) {
+    } 
+    // Redirect authenticated users away from auth screens to main app
+    else if (user && inAuthGroup) {
       router.replace('/(tabs)');
     }
   }, [user, segments, isLoading, isPasswordRecovery]);
