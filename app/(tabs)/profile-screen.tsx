@@ -39,10 +39,11 @@ export default function ProfileScreen() {
     <View style={styles.container}>
       {/* Profile Card */}
       <View style={styles.card}>
-        <Image
-          source={{ uri: 'https://i.pravatar.cc/150' }}
-          style={styles.avatar}
-        />
+        <View style={styles.avatarPlaceholder}>
+          <Text style={styles.avatarText}>
+            {(user?.email?.[0] || 'U').toUpperCase()}
+          </Text>
+        </View>
 
         <Text style={styles.name}>{user?.email?.split('@')[0] || 'User'}</Text>
         <Text style={styles.email}>{user?.email || 'user@example.com'}</Text>
@@ -98,4 +99,19 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontSize: 16,
   },
+  avatarPlaceholder: {
+  width: 80,
+  height: 80,
+  borderRadius: 40,
+  backgroundColor: '#E5E7EB',
+  justifyContent: 'center',
+  alignItems: 'center',
+},
+
+avatarText: {
+  fontSize: 32,
+  fontWeight: '600',
+  color: '#374151',
+},
+
 });
