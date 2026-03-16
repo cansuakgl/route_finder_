@@ -1,38 +1,54 @@
-import type { ReactNode } from 'react';
 import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
-import { Button, type ButtonProps } from 'react-native-paper';
+import { ActivityIndicator, Pressable, Text } from 'react-native';
 
-import { buttonShapeStyles, buttonTextStyles } from '@/constants/theme';
+import { useTheme, type ButtonVariant } from '@/context/theme-context';
 
-type ButtonSize = keyof typeof buttonShapeStyles;
-
-export type AppButtonProps = Omit<ButtonProps, 'children'> & {
-  title: ReactNode;
-  size?: ButtonSize;
-  containerStyle?: StyleProp<ViewStyle>;
-  shapeStyle?: StyleProp<ViewStyle>;
+export type AppButtonProps = {
+  title: string;
+  onPress: () => void;
+  variant?: ButtonVariant;
+  disabled?: boolean;
+  /** Shows a spinner and disables the button while true */
+  loading?: boolean;
+  /** Escape hatch — overrides the outer Pressable style */
+  style?: StyleProp<ViewStyle>;
+  /** Escape hatch — overrides the label Text style */
   textStyle?: StyleProp<TextStyle>;
 };
 
 export function AppButton({
   title,
-  size = 'm',
-  containerStyle,
-  shapeStyle,
-  textStyle,
+  onPress,
+  variant = 'primary',
+  disabled,
+  loading,
   style,
-  contentStyle,
-  labelStyle,
-  ...rest
+  textStyle,
 }: AppButtonProps) {
+  const { variants } = useTheme();
+  const v = variants.button[variant];
+
   return (
-    <Button
-      {...rest}
-      style={[style, containerStyle]}
-      contentStyle={[buttonShapeStyles[size], contentStyle, shapeStyle]}
-      labelStyle={[buttonTextStyles[size], labelStyle, textStyle]}
+    <Pressable
+      onPress={onPress}
+      disabled={disabled || loading}
+      style={({ pressed }) => [
+        v.container,
+        pressed && styles.pressed,
+        (disabled || loading) && styles.disabled,
+        style,
+      ]}
     >
-      {title}
-    </Button>
+      {loading ? (
+        <ActivityIndicator size="small" color={(v.text as TextStyle).color as string} />
+      ) : (
+        <Text style={[v.text, textStyle]}>{title}</Text>
+      )}
+    </Pressable>
   );
 }
+
+const styles = {
+  pressed: { opacity: 0.8 },
+  disabled: { opacity: 0.5 },
+};

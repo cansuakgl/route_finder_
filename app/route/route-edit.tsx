@@ -1,24 +1,18 @@
+import { Camera, LineLayer, MapView, ShapeSource, SymbolLayer } from '@/components/map-view-wrapper';
+import { AppButton } from '@/components/ui/app-button';
+import { AppTextInput } from '@/components/ui/app-text-input';
 import { db } from '@/lib/services/database';
 import { getLocationSuggestions } from '@/lib/services/llm';
 import { getCoordsFromText, getRouteDirections } from '@/lib/services/map';
 import type { RoutePoint, RoutePointInput, TransitSegment, TransitSegmentInput, TransitType } from '@/lib/types/database';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import {
-  Camera,
-  LineLayer,
-  MapView,
-  ShapeSource,
-  SymbolLayer
-} from "@rnmapbox/maps";
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
   Dimensions,
-  StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -571,23 +565,25 @@ export default function RouteEditScreen() {
       )}
     </MapView>
 
-    <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-      <Text style={styles.backIcon}>←</Text>
-    </TouchableOpacity>
+    {/* # NON-DRY component — use <AppButton> from components/ui/app-button */}
+    <AppButton
+      title="←"
+      onPress={() => router.back()}
+      style={[styles.backButton, { minHeight: 44 }]}
+      textStyle={styles.backIcon}
+    />
   </View>
-
-      {/* Info Bar - Route Name & Duration */}
       <View style={styles.infoBar}>
         <View style={styles.routeTitleContainer}>
-          <TextInput
-            style={styles.routeTitleInput}
+          {/* # NON-DRY component — use <AppTextInput> from components/ui/app-text-input */}
+          <AppTextInput
             value={routeNameState}
             onChangeText={(text) => {
               setRouteNameState(text);
               setHasChanges(true);
             }}
             placeholder="Rota adı..."
-            placeholderTextColor="#999"
+            style={{ borderWidth: 0, padding: 0, minHeight: 22, fontSize: 18, fontWeight: '700' }}
           />
           <Text style={styles.pointCount}>{validRoutePoints.length} / {routePoints.length} Durak</Text>
         </View>
@@ -608,14 +604,15 @@ export default function RouteEditScreen() {
             <Text style={styles.searchIconText}>🔍</Text>
           </TouchableOpacity>
         )}
-        <TextInput
+        {/* # NON-DRY component — use <AppTextInput> from components/ui/app-text-input */}
+        <AppTextInput
           placeholder="Durak eklemek için arama yapın..."
           value={searchText}
           onChangeText={setSearchText}
           onSubmitEditing={onSearch}
-          style={styles.searchInput}
+          containerStyle={{ flex: 1 }}
+          style={{ borderWidth: 0, height: 48, fontSize: 14 }}
           editable={!isSearching}
-          placeholderTextColor="#999"
         />
       </View>
 
@@ -660,24 +657,21 @@ export default function RouteEditScreen() {
 
       {/* Bottom Action Button */}
       <View style={styles.bottomActions}>
-        <TouchableOpacity 
-          style={[styles.saveButton, isLoading && styles.saveButtonDisabled]} 
+        {/* # NON-DRY component — use <AppButton> from components/ui/app-button */}
+        <AppButton
+          title="Rotaı Kaydet"
           onPress={handleSave}
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <ActivityIndicator size="small" color="#fff" />
-          ) : (
-            <Text style={styles.saveText}>Rotayı Kaydet</Text>
-          )}
-        </TouchableOpacity>
+          loading={isLoading}
+          style={styles.saveButton}
+          textStyle={styles.saveText}
+        />
       </View>
     </GestureHandlerRootView>
   );
 }
 
 
-const transitStyles = StyleSheet.create({
+const transitStyles: Record<string, any> = {
   container: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -705,9 +699,9 @@ const transitStyles = StyleSheet.create({
   textSelected: {
     color: '#fff',
   },
-});
+};
 
-const styles = StyleSheet.create({
+const styles: Record<string, any> = {
   container: {
     flex: 1,
     backgroundColor: '#F8F9FA',
@@ -945,4 +939,4 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
   },
-});
+};

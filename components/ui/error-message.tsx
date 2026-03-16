@@ -1,18 +1,17 @@
-import { Text, useColorScheme } from 'react-native';
-import { Colors, formStyles } from '@/constants/theme';
+import { useTheme } from '@/context/theme-context';
+import { Text } from 'react-native';
 
 type ErrorMessageProps = {
   message: string | null;
 };
 
 export function ErrorMessage({ message }: ErrorMessageProps) {
-  const colorScheme = useColorScheme() ?? 'light';
-  const colors = Colors[colorScheme];
+  const { variants, spacing } = useTheme();
 
   if (!message) return null;
 
   return (
-    <Text style={[formStyles.errorText, { color: colors.error }]}>
+    <Text style={[variants.text.error, { marginVertical: spacing.xs }]}>
       {message}
     </Text>
   );

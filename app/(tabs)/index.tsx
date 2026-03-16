@@ -1,26 +1,30 @@
 import { Camera, MapView } from '@/components/map-view-wrapper';
+import { ThemedText } from '@/components/themed-text';
+import { AppButton } from '@/components/ui/app-button';
+import { AppTextInput } from '@/components/ui/app-text-input';
 import { useAuth } from '@/context/auth-context';
+import { useTheme } from '@/context/theme-context';
 import { db } from '@/lib/services/database';
 import { getLocationSuggestions } from '@/lib/services/llm';
 import { getCoordsFromText } from '@/lib/services/map';
 import type { Route, RoutePoint, TransitSegment } from '@/lib/types/database';
 import { useFocusEffect, useRouter } from 'expo-router';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
   FlatList,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+  Pressable,
+  View,
+  type ViewStyle
 } from 'react-native';
 
 export default function ChatScreen() {
   const router = useRouter();
   const { user } = useAuth();
   const cameraRef = useRef(null);
+  const theme = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
 
   const [searchText, setSearchText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -132,10 +136,10 @@ export default function ChatScreen() {
 
       {/* Search Box */}
       <View style={styles.searchBox}>
-        <TouchableOpacity 
-          style={styles.plusButton}
+        <AppButton
+          title="＋"
+          loading={isLoading}
           onPress={() => {
-            // Navigate to route-edit with empty data for a fresh start
             // @ts-ignore
             router.push({
               pathname: '/route/route-edit',
@@ -147,26 +151,22 @@ export default function ChatScreen() {
               },
             });
           }}
-        >
-          {isLoading ? (
-            <ActivityIndicator size="small" color="#6a5acd" />
-          ) : (
-            <Text style={styles.plusText}>＋</Text>
-          )}
-        </TouchableOpacity>
-        <TextInput
+          style={styles.plusButton}
+        />
+        <AppTextInput
           placeholder="Nereye gitmek istersin?"
           value={searchText}
           onChangeText={setSearchText}
           onSubmitEditing={onSearch}
-          style={styles.searchInput}
+          containerStyle={{ flex: 1 }}
+          style={{ borderWidth: 0, height: 48, fontSize: 14 }}
           editable={!isLoading}
         />
       </View>
 
       {/* Header */}
       <View style={styles.headerRow}>
-        <Text style={styles.sectionTitle}>💜 Favori Rotalarım</Text>
+        <ThemedText variant="label">💜 Favori Rotalarım</ThemedText>
       </View>
 
       {/* Route List */}
@@ -176,12 +176,12 @@ export default function ChatScreen() {
         contentContainerStyle={{ paddingBottom: 150 }}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>❤️ Henüz favori rota yok</Text>
-            <Text style={styles.emptySubtext}>Rotalar sayfasından favori ekleyebilirsiniz</Text>
+            <ThemedText variant="muted">❤️ Henüz favori rota yok</ThemedText>
+            <ThemedText variant="caption">Rotalar sayfasından favori ekleyebilirsiniz</ThemedText>
           </View>
         }
         renderItem={({ item }) => (
-          <TouchableOpacity
+          <Pressable
             onPress={() => {
               router.push({
                 pathname: '/route/route-map',
@@ -194,170 +194,121 @@ export default function ChatScreen() {
           >
             <View style={styles.favoriteCard}>
               <View style={styles.favoriteCardHeader}>
-                <View style={styles.favoriteIconBox}>
-                  <Text style={styles.favoriteIcon}>📍</Text>
+                <View style={[styles.favoriteIconBox, { backgroundColor: theme.colors.surface }]}>
+                  <ThemedText variant="body">📍</ThemedText>
                 </View>
                 <View style={styles.favoriteTextBox}>
-                  <Text style={styles.favoriteTitle}>{item.name}</Text>
-                  <Text style={styles.favoriteSub}>
+                  <ThemedText variant="label">{item.name}</ThemedText>
+                  <ThemedText variant="caption">
                     {item.route_description || 'Favori rota.'}
-                  </Text>
+                  </ThemedText>
                 </View>
-                <TouchableOpacity
-                  style={styles.heartButton}
+                <Pressable
+                  style={[styles.heartButton, { backgroundColor: theme.colors.surface }]}
                   onPress={(e) => {
-                    e.stopPropagation();
                     toggleFavorite(item.id, item.is_favorite);
                   }}
                   disabled={favoriteTogglingId === item.id}
                 >
                   {favoriteTogglingId === item.id ? (
-                    <ActivityIndicator size="small" color="#ff69b4" />
+                    <ActivityIndicator size="small" color={theme.colors.error} />
                   ) : (
-                    <Text style={styles.heartIconSmall}>❤️</Text>
+                    <ThemedText variant="body">❤️</ThemedText>
                   )}
-                </TouchableOpacity>
+                </Pressable>
               </View>
             </View>
-          </TouchableOpacity>
+          </Pressable>
         )}
       />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f2f2f2',
-  },
-  mapArea: {
-    height: 250,
-    backgroundColor: '#d9d9d9',
-  },
-  mapbox: {
-    flex: 1,
-  },
-  markerContainer: {
-    width: 24,
-    height: 24,
-    backgroundColor: '#6a5acd',
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#fff',
-  },
-  markerText: {
-    color: '#fff',
-    fontSize: 10,
-    fontWeight: 'bold',
-  },
-  searchBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginHorizontal: 16,
-    marginTop: -25,
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    elevation: 5,
-    zIndex: 10,
-  },
-  plusButton: {
-    marginRight: 8,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#eee',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  plusText: {
-    fontSize: 20,
-  },
-  searchInput: {
-    flex: 1,
-    height: 45,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    marginTop: 20,
-    marginBottom: 8,
-  },
-  sectionTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#333',
-  },
-  favoriteCard: {
-    flexDirection: 'row',
-    backgroundColor: '#fff',
-    marginHorizontal: 16,
-    marginBottom: 12,
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-    elevation: 2,
-  },
-  favoriteCardHeader: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  favoriteIconBox: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#f0f0ff',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  favoriteIcon: {
-    fontSize: 20,
-  },
-  favoriteTextBox: {
-    flex: 1,
-  },
-  favoriteTitle: {
-    fontWeight: '700',
-    fontSize: 15,
-  },
-  favoriteSub: {
-    color: '#888',
-    fontSize: 12,
-  },
-  heartButton: {
-    padding: 8,
-    borderRadius: 16,
-    backgroundColor: '#f8f8f8',
-  },
-  heartIconSmall: {
-    fontSize: 16,
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    paddingVertical: 40,
-    paddingHorizontal: 20,
-  },
-  emptyText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#666',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  emptySubtext: {
-    fontSize: 14,
-    color: '#999',
-    textAlign: 'center',
-  },
-  goArrow: {
-    fontSize: 20,
-    color: '#6a5acd',
-  },
-});
+function makeStyles(theme: ReturnType<typeof useTheme>): Record<string, ViewStyle> {
+  return ({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+    },
+    mapArea: {
+      height: 250,
+    },
+    mapbox: {
+      flex: 1,
+    },
+    markerContainer: {
+      width: 24,
+      height: 24,
+      backgroundColor: theme.colors.link,
+      borderRadius: 12,
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderWidth: 2,
+      borderColor: theme.colors.surfaceElevated,
+    },
+    searchBox: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginHorizontal: theme.spacing.md,
+      marginTop: -25,
+      backgroundColor: theme.colors.surfaceElevated,
+      borderRadius: 20,
+      paddingHorizontal: theme.spacing.sm,
+      elevation: 5,
+      zIndex: 10,
+    },
+    plusButton: {
+      marginRight: theme.spacing.sm,
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: theme.colors.surface,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    headerRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingHorizontal: theme.spacing.md,
+      marginTop: theme.spacing.md,
+      marginBottom: theme.spacing.sm,
+    },
+    favoriteCard: {
+      flexDirection: 'row',
+      backgroundColor: theme.colors.surfaceElevated,
+      marginHorizontal: theme.spacing.md,
+      marginBottom: theme.spacing.sm,
+      borderRadius: theme.radius.md,
+      padding: theme.spacing.md,
+      alignItems: 'center',
+      elevation: 2,
+    },
+    favoriteCardHeader: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    favoriteIconBox: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: theme.spacing.sm,
+    },
+    favoriteTextBox: {
+      flex: 1,
+    },
+    heartButton: {
+      padding: theme.spacing.sm,
+      borderRadius: theme.radius.md,
+    },
+    emptyContainer: {
+      alignItems: 'center',
+      paddingVertical: 40,
+      paddingHorizontal: theme.spacing.md,
+    },
+  });
+}

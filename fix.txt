@@ -1,0 +1,15 @@
+- Too many fetches done with the map and LLM, could be optimized.
+- Route points are not visible on the map
+- When centering the map around the route, zooming from the whole world view to the smaller version is unnecessary rendering, could be loading instead.
+- Misspelled button names
+- Locking the view to instanbul doesnt make total sense
+- For routes there should be a delete option available
+- Ask the LLm to name the route 
+- Accept Route point lists of variable length
+- Tell the LLm to return empty lists for nonsense requests
+- Tell the LLM to return relevant tags for route points and / or routes.
+- Completely remove mock data from the repo
+- Border around profile pic
+- Profile pic editable 
+- ask for username signing up 
+- to change the email ask for email conformation

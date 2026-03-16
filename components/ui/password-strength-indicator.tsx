@@ -1,6 +1,6 @@
-import { View, Text, useColorScheme } from 'react-native';
-import { validatePassword, PasswordValidation } from '@/lib/validation';
-import { Colors, formStyles } from '@/constants/theme';
+import { useTheme } from '@/context/theme-context';
+import { validatePassword } from '@/lib/validation';
+import { Text, View } from 'react-native';
 
 type PasswordStrengthIndicatorProps = {
   password: string;
@@ -11,8 +11,7 @@ export function PasswordStrengthIndicator({
   password, 
   showRequirements = true 
 }: PasswordStrengthIndicatorProps) {
-  const colorScheme = useColorScheme() ?? 'light';
-  const colors = Colors[colorScheme];
+  const { colors } = useTheme();
   const validation = validatePassword(password);
 
   if (!password || !showRequirements) return null;
@@ -26,15 +25,11 @@ export function PasswordStrengthIndicator({
   ];
 
   return (
-    <View style={formStyles.helperText}>
+    <View style={{ marginTop: 4, marginBottom: 8 }}>
       {requirements.map((req) => (
         <Text
           key={req.key}
-          style={{
-            fontSize: 12,
-            color: req.met ? colors.success : colors.textSecondary,
-            marginBottom: 2,
-          }}
+          style={{ fontSize: 12, marginBottom: 2, color: req.met ? colors.success : colors.textSecondary }}
         >
           {req.met ? '✓' : '○'} {req.label}
         </Text>

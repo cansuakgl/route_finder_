@@ -1,78 +1,113 @@
-import { Platform, StyleSheet } from 'react-native';
+import { Platform } from 'react-native';
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+// ─── Raw palette ────────────────────────────────────────────────────────────
+const palette = {
+  teal200: '#62d1cd',
+  teal500: '#0a7ea4',
+  teal700: '#3881bc',
+  burgundy500: '#90323D',
+  burgundy700: '#5E0B15',
+  sand200: '#D7C9AA',
+  sand400: '#D7AF70',
+  white: '#ffffff',
+  gray50: '#f9fafb',
+  gray100: '#f3f4f6',
+  gray200: '#e5e7eb',
+  gray300: '#d1d5db',
+  gray400: '#9ca3af',
+  gray500: '#6b7280',
+  gray600: '#4b5563',
+  gray700: '#374151',
+  gray800: '#1f2937',
+  gray900: '#111827',
+  red400: '#ef5350',
+  red600: '#d32f2f',
+  green400: '#66bb6a',
+  green600: '#388e3c',
+  orange400: '#ffa726',
+  orange600: '#f57c00',
+  dark100: '#151718',
+  dark200: '#1c1c1e',
+  dark300: '#2c2c2e',
+  dark400: '#3a3a3c',
+} as const;
 
+// ─── Semantic color tokens ────────────────────────────────────────────────────
 export const Colors = {
   light: {
-    primary: '#a8f0ee',
-    secondary: '#90323D',
-    accent: "#D7C9AA",
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
-    error: '#d32f2f',
-    success: '#388e3c',
-    warning: '#f57c00',
-    textSecondary: '#757575',
-    border: '#e0e0e0',
+    primary: palette.teal200,
+    primaryContent: palette.gray800,
+    secondary: palette.burgundy500,
+    secondaryContent: palette.white,
+    accent: palette.sand200,
+    background: palette.white,
+    surface: palette.gray50,
+    surfaceElevated: palette.white,
+    text: palette.gray900,
+    textSecondary: palette.gray500,
+    textDisabled: palette.gray400,
+    border: palette.gray200,
+    icon: palette.gray500,
+    error: palette.red600,
+    errorContent: palette.white,
+    success: palette.green600,
+    successContent: palette.white,
+    warning: palette.orange600,
+    warningContent: palette.white,
+    link: palette.teal500,
+    tint: palette.teal500,
+    tabIconDefault: palette.gray500,
+    tabIconSelected: palette.teal500,
   },
   dark: {
-    primary: '#3881bc',
-    secondary: '#5E0B15',
-    accent:  '#D7AF70',
+    primary: palette.teal700,
+    primaryContent: palette.white,
+    secondary: palette.burgundy700,
+    secondaryContent: palette.white,
+    accent: palette.sand400,
+    background: palette.dark100,
+    surface: palette.dark200,
+    surfaceElevated: palette.dark300,
     text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
-    error: '#ef5350',
-    success: '#66bb6a',
-    warning: '#ffa726',
-    textSecondary: '#b0b0b0',
-    border: '#424242',
+    textSecondary: palette.gray400,
+    textDisabled: palette.gray600,
+    border: palette.dark400,
+    icon: palette.gray400,
+    error: palette.red400,
+    errorContent: palette.white,
+    success: palette.green400,
+    successContent: palette.white,
+    warning: palette.orange400,
+    warningContent: palette.white,
+    link: palette.teal200,
+    tint: palette.white,
+    tabIconDefault: palette.gray400,
+    tabIconSelected: palette.white,
   },
-};
+} as const;
 
-export const Fonts = Platform.select({
-  ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
-  },
-  default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
-  },
-  web: {
-    sans: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-    serif: "Georgia, 'Times New Roman', serif",
-    rounded: "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
-    mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
-  },
-});
+// ─── Spacing scale ────────────────────────────────────────────────────────────
+export const spacing = {
+  xs: 4,
+  sm: 8,
+  md: 16,
+  lg: 24,
+  xl: 32,
+  xxl: 48,
+} as const;
 
-export const styles = {
-  spacing: {
-    xs: 4,
-    sm: 8,
-    md: 16,
-    lg: 24,
-    xl: 32,
-  },
+// ─── Border radius scale ──────────────────────────────────────────────────────
+export const radius = {
+  sm: 4,
+  md: 8,
+  lg: 16,
+  xl: 24,
+  full: 9999,
+} as const;
 
-  fontSize: {
+// ─── Typography scale ─────────────────────────────────────────────────────────
+export const typography = {
+  sizes: {
     xs: 12,
     sm: 14,
     md: 16,
@@ -80,151 +115,39 @@ export const styles = {
     xl: 24,
     xxl: 32,
   },
-
-  radius: {
-    sm: 4,
-    md: 8,
-    lg: 16,
-    xl: 24,
+  weights: {
+    regular: '400' as const,
+    medium: '500' as const,
+    semibold: '600' as const,
+    bold: '700' as const,
   },
+  fonts: Platform.select({
+    ios: { sans: 'system-ui', mono: 'ui-monospace' },
+    default: { sans: 'normal', mono: 'monospace' },
+  }),
 } as const;
 
-export const buttonShapeStyles = StyleSheet.create({
-  s: {
-    minHeight: 32,
-    paddingVertical: styles.spacing.xs,
-    paddingHorizontal: styles.spacing.sm,
-    borderRadius: styles.radius.sm,
-    alignItems: 'center',
-    justifyContent: 'center',
+// ─── Elevation / shadow ───────────────────────────────────────────────────────
+export const shadows = {
+  sm: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 2,
+    elevation: 1,
   },
-  m: {
-    minHeight: 40,
-    paddingVertical: styles.spacing.sm,
-    paddingHorizontal: styles.spacing.md,
-    borderRadius: styles.radius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
+  md: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  l: {
-    minHeight: 48,
-    paddingVertical: styles.spacing.sm,
-    paddingHorizontal: styles.spacing.lg,
-    borderRadius: styles.radius.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
+  lg: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 6,
   },
-});
-
-export const textPresets = StyleSheet.create({
-  s: {
-    fontSize: styles.fontSize.sm,
-    lineHeight: 20,
-    fontFamily: Fonts.sans,
-  },
-  m: {
-    fontSize: styles.fontSize.md,
-    lineHeight: 22,
-    fontFamily: Fonts.sans,
-  },
-  l: {
-    fontSize: styles.fontSize.lg,
-    lineHeight: 26,
-    fontFamily: Fonts.sans,
-  },
-});
-
-export const buttonTextStyles = textPresets;
-
-export const inputShapeStyles = StyleSheet.create({
-  s: {
-    minHeight: 36,
-    paddingVertical: styles.spacing.xs,
-    paddingHorizontal: styles.spacing.sm,
-    borderRadius: styles.radius.sm,
-    borderWidth: 1,
-  },
-  m: {
-    minHeight: 44,
-    paddingVertical: styles.spacing.sm,
-    paddingHorizontal: styles.spacing.md,
-    borderRadius: styles.radius.md,
-    borderWidth: 1,
-  },
-  l: {
-    minHeight: 52,
-    paddingVertical: styles.spacing.sm,
-    paddingHorizontal: styles.spacing.lg,
-    borderRadius: styles.radius.lg,
-    borderWidth: 1,
-  },
-});
-
-export const inputTextStyles = textPresets;
-
-
-export const layoutStyles = StyleSheet.create({
-  screenContainer: {
-    flex: 1,
-    padding: styles.spacing.lg,
-  },
-  centeredContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: styles.spacing.lg,
-  },
-});
-
-
-export const formStyles = StyleSheet.create({
-  formContainer: {
-    width: '100%',
-    maxWidth: 400,
-    alignSelf: 'center',
-  },
-  inputSpacing: {
-    marginBottom: styles.spacing.sm,
-    width: '100%',
-  },
-  sectionSpacing: {
-    marginBottom: styles.spacing.lg,
-  },
-  errorText: {
-    fontSize: styles.fontSize.sm,
-    marginTop: styles.spacing.xs,
-    marginBottom: styles.spacing.sm,
-  },
-  helperText: {
-    fontSize: styles.fontSize.xs,
-    marginTop: styles.spacing.xs,
-    marginBottom: styles.spacing.sm,
-  },
-  buttonSpacing: {
-    marginTop: styles.spacing.md,
-    alignSelf: 'center',
-  },
-  buttonSelfSize: {
-    alignSelf: 'center',
-  },
-  dividerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: styles.spacing.lg,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-  },
-  dividerText: {
-    marginHorizontal: styles.spacing.md,
-    fontSize: styles.fontSize.sm,
-  },
-  segmentedButtonContainer: {
-    alignSelf: 'center',
-    marginBottom: styles.spacing.lg,
-    width: 'auto',
-    minWidth: 0,
-    flexShrink: 1,
-    flexGrow: 0,
-  },
-});
+} as const;

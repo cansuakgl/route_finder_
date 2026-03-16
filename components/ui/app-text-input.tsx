@@ -1,44 +1,30 @@
-import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
-import { TextInput, type TextInputProps, View } from 'react-native';
+import type { StyleProp, ViewStyle } from 'react-native';
+import { TextInput, View, type TextInputProps } from 'react-native';
 
-import { Colors, inputShapeStyles, inputTextStyles } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-
-type InputSize = keyof typeof inputShapeStyles;
+import { useTheme, type InputVariant } from '@/context/theme-context';
 
 export type AppTextInputProps = TextInputProps & {
-  size?: InputSize;
+  variant?: InputVariant;
+  /** Wraps the TextInput in a View — use this for margins/width layout */
   containerStyle?: StyleProp<ViewStyle>;
-  inputStyle?: StyleProp<TextStyle>;
 };
 
 export function AppTextInput({
-  size = 'm',
+  variant = 'default',
   containerStyle,
-  inputStyle,
   style,
   placeholderTextColor,
   ...rest
 }: AppTextInputProps) {
-  const colorScheme = useColorScheme() ?? 'light';
-  const colors = Colors[colorScheme];
+  const { variants } = useTheme();
+  const v = variants.input[variant];
 
   return (
     <View style={containerStyle}>
       <TextInput
         {...rest}
-        placeholderTextColor={placeholderTextColor ?? colors.icon}
-        style={[
-          inputShapeStyles[size],
-          inputTextStyles[size],
-          {
-            color: colors.text,
-            borderColor: colors.icon,
-            backgroundColor: colors.background,
-          },
-          style,
-          inputStyle,
-        ]}
+        placeholderTextColor={placeholderTextColor ?? v.placeholderColor}
+        style={[v.style, style]}
       />
     </View>
   );

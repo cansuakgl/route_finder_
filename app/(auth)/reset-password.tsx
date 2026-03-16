@@ -2,12 +2,12 @@ import { AppButton } from '@/components/ui/app-button';
 import { ErrorMessage } from '@/components/ui/error-message';
 import { PasswordInput } from '@/components/ui/password-input';
 import { PasswordStrengthIndicator } from '@/components/ui/password-strength-indicator';
-import { Colors, formStyles, layoutStyles } from '@/constants/theme';
+import { useTheme } from '@/context/theme-context';
 import { supabase } from '@/lib/supabase';
 import { validatePassword } from '@/lib/validation';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { View, useColorScheme } from 'react-native';
+import { View } from 'react-native';
 import { Text } from 'react-native-paper';
 
 export default function ResetPasswordScreen() {
@@ -17,8 +17,8 @@ export default function ResetPasswordScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const router = useRouter();
-  const colorScheme = useColorScheme() ?? 'light';
-  const colors = Colors[colorScheme];
+  const theme = useTheme();
+  const { colors } = theme;
 
   const handleUpdatePassword = async () => {
     setError(null);
@@ -52,8 +52,8 @@ export default function ResetPasswordScreen() {
 
   if (isSuccess) {
     return (
-      <View style={layoutStyles.centeredContainer}>
-        <View style={formStyles.formContainer}>
+      <View style={{ flex: 1, justifyContent: 'center', padding: theme.spacing.lg }}>
+        <View style={{ width: '100%', maxWidth: 400, alignSelf: 'center' }}>
           <Text 
             variant="headlineMedium" 
             style={{ textAlign: 'center', marginBottom: 16, color: colors.text }}
@@ -69,9 +69,6 @@ export default function ResetPasswordScreen() {
           <AppButton
             title="Continue to App"
             onPress={() => router.replace('/(tabs)')}
-            mode="contained"
-            buttonColor={colors.primary}
-            textColor={colors.text}
           />
         </View>
       </View>
@@ -79,8 +76,8 @@ export default function ResetPasswordScreen() {
   }
 
   return (
-    <View style={layoutStyles.centeredContainer}>
-      <View style={formStyles.formContainer}>
+    <View style={{ flex: 1, justifyContent: 'center', padding: theme.spacing.lg }}>
+      <View style={{ width: '100%', maxWidth: 400, alignSelf: 'center' }}>
         <Text 
           variant="headlineMedium" 
           style={{ textAlign: 'center', marginBottom: 8, color: colors.text }}
@@ -101,7 +98,7 @@ export default function ResetPasswordScreen() {
             setPassword(text);
             setError(null);
           }}
-          containerStyle={formStyles.inputSpacing}
+          containerStyle={{ marginBottom: theme.spacing.sm, width: '100%' }}
         />
         
         {password.length > 0 && (
@@ -115,19 +112,16 @@ export default function ResetPasswordScreen() {
             setConfirmPassword(text);
             setError(null);
           }}
-          containerStyle={formStyles.inputSpacing}
+          containerStyle={{ marginBottom: theme.spacing.sm, width: '100%' }}
         />
 
         <ErrorMessage message={error} />
 
-        <View style={formStyles.buttonSpacing}>
+        <View style={{ marginTop: theme.spacing.md, alignSelf: 'center' }}>
           <AppButton
             title={isLoading ? 'Updating...' : 'Update Password'}
             onPress={handleUpdatePassword}
             disabled={isLoading}
-            mode="contained"
-            buttonColor={colors.primary}
-            textColor={colors.text}
           />
         </View>
       </View>

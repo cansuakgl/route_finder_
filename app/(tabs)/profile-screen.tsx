@@ -1,18 +1,15 @@
+import { ThemedText } from '@/components/themed-text';
+import { AppButton } from '@/components/ui/app-button';
 import { useAuth } from '@/context/auth-context';
+import { useTheme } from '@/context/theme-context';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import {
-    Alert,
-    Image,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-} from 'react-native';
+import { Alert, View } from 'react-native';
 
 export default function ProfileScreen() {
   const router = useRouter();
   const { user, signOut } = useAuth();
+  const theme = useTheme();
 
   const handleLogout = () => {
     Alert.alert(
@@ -35,83 +32,30 @@ export default function ProfileScreen() {
     );
   };
 
+  // # NON-DRY component — root <View> should use <ThemedView> from components/themed-view
   return (
-    <View style={styles.container}>
+    <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: theme.spacing.lg, backgroundColor: theme.colors.surface }}>
       {/* Profile Card */}
-      <View style={styles.card}>
-        <View style={styles.avatarPlaceholder}>
-          <Text style={styles.avatarText}>
+      <View style={{ paddingVertical: theme.spacing.xl, alignItems: 'center', elevation: 4, marginBottom: theme.spacing.xl, backgroundColor: theme.colors.surfaceElevated, borderRadius: theme.radius.lg }}>
+        <View style={{ width: 80, height: 80, borderRadius: 40, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.surface }}>
+          <ThemedText variant="heading2">
             {(user?.email?.[0] || 'U').toUpperCase()}
-          </Text>
+          </ThemedText>
         </View>
 
-        <Text style={styles.name}>{user?.email?.split('@')[0] || 'User'}</Text>
-        <Text style={styles.email}>{user?.email || 'user@example.com'}</Text>
+        <ThemedText variant="heading3" style={{ marginTop: theme.spacing.md }}>
+          {user?.email?.split('@')[0] || 'User'}
+        </ThemedText>
+        <ThemedText variant="muted" style={{ marginTop: theme.spacing.xs }}>
+          {user?.email || 'user@example.com'}
+        </ThemedText>
       </View>
 
-      {/* Logout Button */}
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Text style={styles.logoutText}>Çıkış Yap</Text>
-      </TouchableOpacity>
+      <AppButton
+        variant="danger"
+        title="Çıkış Yap"
+        onPress={handleLogout}
+      />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f2f2f2',
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-  },
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    paddingVertical: 32,
-    alignItems: 'center',
-    elevation: 4,
-    marginBottom: 30,
-  },
-  avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginBottom: 16,
-  },
-  name: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#333',
-  },
-  email: {
-    fontSize: 14,
-    color: '#777',
-    marginTop: 4,
-  },
-  logoutButton: {
-    backgroundColor: '#ff4d4d',
-    paddingVertical: 14,
-    borderRadius: 24,
-    alignItems: 'center',
-  },
-  logoutText: {
-    color: '#fff',
-    fontWeight: '700',
-    fontSize: 16,
-  },
-  avatarPlaceholder: {
-  width: 80,
-  height: 80,
-  borderRadius: 40,
-  backgroundColor: '#E5E7EB',
-  justifyContent: 'center',
-  alignItems: 'center',
-},
-
-avatarText: {
-  fontSize: 32,
-  fontWeight: '600',
-  color: '#374151',
-},
-
-});

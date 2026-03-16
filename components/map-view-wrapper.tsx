@@ -1,6 +1,6 @@
 // Map wrapper component that handles Mapbox availability
 import React from 'react';
-import { Platform, StyleSheet, Text, View } from 'react-native';
+import { Platform, Text, View } from 'react-native';
 
 interface MapViewProps {
   style?: any;
@@ -37,9 +37,9 @@ export const MapView: React.FC<MapViewProps> = ({ style, children }) => {
     );
   }
   return (
-    <View style={[styles.placeholder, style]}>
-      <Text style={styles.placeholderText}>🗺️</Text>
-      <Text style={styles.placeholderSubtext}>
+    <View style={[{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#e8e8e8' }, style]}>
+      <Text style={{ fontSize: 48, marginBottom: 8 }}>🗺️</Text>
+      <Text style={{ fontSize: 14, color: '#666' }}>
         {Platform.OS === 'android' ? 'Map (Expo Go)' : 'Map Preview'}
       </Text>
     </View>
@@ -99,13 +99,14 @@ export const ShapeSource: React.FC<ShapeSourceProps> = ({ id, shape, children })
 interface LineLayerProps {
   id: string;
   style?: any;
+  belowLayerID?: string;
 }
 
-export const LineLayer: React.FC<LineLayerProps> = ({ id, style }) => {
+export const LineLayer: React.FC<LineLayerProps> = ({ id, style, belowLayerID }) => {
   if (isMapboxAvailable && Mapbox && Mapbox.LineLayer) {
     const MapboxLineLayer = Mapbox.LineLayer;
     console.log('LineLayer rendering:', id, 'with style:', JSON.stringify(style));
-    return <MapboxLineLayer id={id} style={style} />;
+    return <MapboxLineLayer id={id} style={style} belowLayerID={belowLayerID} />;
   }
   console.log('LineLayer NOT available');
   return null;
@@ -166,19 +167,3 @@ export const PointAnnotation: React.FC<PointAnnotationProps> = ({ id, coordinate
 
 export { isMapboxAvailable };
 
-const styles = StyleSheet.create({
-  placeholder: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#e8e8e8',
-  },
-  placeholderText: {
-    fontSize: 48,
-    marginBottom: 8,
-  },
-  placeholderSubtext: {
-    fontSize: 14,
-    color: '#666',
-  },
-});

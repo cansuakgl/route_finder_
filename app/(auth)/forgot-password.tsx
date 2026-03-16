@@ -1,12 +1,12 @@
 import { AppButton } from '@/components/ui/app-button';
 import { AppTextInput } from '@/components/ui/app-text-input';
 import { ErrorMessage } from '@/components/ui/error-message';
-import { Colors, formStyles, layoutStyles } from '@/constants/theme';
+import { useTheme } from '@/context/theme-context';
 import { supabase } from '@/lib/supabase';
 import { validateEmail } from '@/lib/validation';
 import { Link, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, View, useColorScheme } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { Text } from 'react-native-paper';
 
 export default function ForgotPasswordScreen() {
@@ -15,8 +15,8 @@ export default function ForgotPasswordScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const router = useRouter();
-  const colorScheme = useColorScheme() ?? 'light';
-  const colors = Colors[colorScheme];
+  const theme = useTheme();
+  const { colors } = theme;
 
   const handleResetPassword = async () => {
     setError(null);
@@ -44,8 +44,8 @@ export default function ForgotPasswordScreen() {
 
   if (emailSent) {
     return (
-      <View style={layoutStyles.centeredContainer}>
-        <View style={formStyles.formContainer}>
+      <View style={{ flex: 1, justifyContent: 'center', padding: theme.spacing.lg }}>
+        <View style={{ width: '100%', maxWidth: 400, alignSelf: 'center' }}>
           <Text 
             variant="headlineMedium" 
             style={{ textAlign: 'center', marginBottom: 16, color: colors.text }}
@@ -61,9 +61,6 @@ export default function ForgotPasswordScreen() {
           <AppButton
             title="Back to Sign In"
             onPress={() => router.replace('/(auth)/signin')}
-            mode="contained"
-            buttonColor={colors.primary}
-            textColor={colors.text}
           />
           <Pressable 
             onPress={() => {
@@ -82,8 +79,8 @@ export default function ForgotPasswordScreen() {
   }
 
   return (
-    <View style={layoutStyles.centeredContainer}>
-      <View style={formStyles.formContainer}>
+    <View style={{ flex: 1, justifyContent: 'center', padding: theme.spacing.lg }}>
+      <View style={{ width: '100%', maxWidth: 400, alignSelf: 'center' }}>
         <Text 
           variant="headlineMedium" 
           style={{ textAlign: 'center', marginBottom: 8, color: colors.text }}
@@ -106,19 +103,16 @@ export default function ForgotPasswordScreen() {
           }}
           keyboardType="email-address"
           autoCapitalize="none"
-          containerStyle={formStyles.inputSpacing}
+          containerStyle={{ marginBottom: theme.spacing.sm, width: '100%' }}
         />
 
         <ErrorMessage message={error} />
 
-        <View style={formStyles.buttonSpacing}>
+        <View style={{ marginTop: theme.spacing.md, alignSelf: 'center' }}>
           <AppButton
             title={isLoading ? 'Sending...' : 'Send Reset Link'}
             onPress={handleResetPassword}
             disabled={isLoading}
-            mode="contained"
-            buttonColor={colors.primary}
-            textColor={colors.text}
           />
         </View>
 
