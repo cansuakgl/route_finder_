@@ -2,7 +2,7 @@ import { Camera, MapView } from '@/components/map-view-wrapper';
 import { useAuth } from '@/context/auth-context';
 import { db } from '@/lib/services/database';
 import { fetchLlmRecommendation } from '@/lib/services/llm';
-import { getCoordsFromText } from '@/lib/services/map';
+//import { getCoordsFromText } from '@/lib/services/map';
 import type { Route, RoutePoint, TransitSegment } from '@/lib/types/database';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -62,64 +62,126 @@ export default function ChatScreen() {
     }
   }
 
-  const onSearch = async () => {
-    if (searchText.trim().length === 0) return;
+  // const onSearch = async () => {
+  //   if (searchText.trim().length === 0) return;
     
-    setIsLoading(true);
-    try {
-      const result = await fetchLlmRecommendation(searchText, []);
+  //   setIsLoading(true);
+  //   try {
+  //     const result = await fetchLlmRecommendation(searchText, []);
 
-      const routePoints: RoutePoint[] = [];
-      for (let idx = 0; idx < result.recommendations.length; idx++) {
-        const item = result.recommendations[idx];
-        const coords = await getCoordsFromText(item.title);
-        routePoints.push({
-          id: `llm-${Math.random().toString(36).substr(2, 9)}`,
-          route_id: '',
-          position: idx,
-          name: item.title,
-          address: item.description || null,
-          latitude: coords?.[1] || null,
-          longitude: coords?.[0] || null,
-          tags: null,
-          created_at: new Date().toISOString(),
-        });
-      }
+  //     const routePoints: RoutePoint[] = [];
+  //     for (let idx = 0; idx < result.recommendations.length; idx++) {
+  //       const item = result.recommendations[idx];
+  //       const coords = await getCoordsFromText(item.title);
+  //       routePoints.push({
+  //         id: `llm-${Math.random().toString(36).substr(2, 9)}`,
+  //         route_id: '',
+  //         position: idx,
+  //         name: item.title,
+  //         address: item.description || null,
+  //         latitude: coords?.[1] || null,
+  //         longitude: coords?.[0] || null,
+  //         tags: null,
+  //         created_at: new Date().toISOString(),
+  //       });
+  //     }
 
-      // Create transit segments
-      const segments: TransitSegment[] = [];
-      for (let i = 0; i < routePoints.length - 1; i++) {
-        segments.push({
-          id: `seg-${i}`,
-          route_id: '',
-          from_point_id: routePoints[i].id,
-          to_point_id: routePoints[i + 1].id,
-          transit_type: 'driving',
-          distance_km: null,
-          duration_minutes: null,
-          notes: null,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        });
-      }
+  //     // Create transit segments
+  //     const segments: TransitSegment[] = [];
+  //     for (let i = 0; i < routePoints.length - 1; i++) {
+  //       segments.push({
+  //         id: `seg-${i}`,
+  //         route_id: '',
+  //         from_point_id: routePoints[i].id,
+  //         to_point_id: routePoints[i + 1].id,
+  //         transit_type: 'driving',
+  //         distance_km: null,
+  //         duration_minutes: null,
+  //         notes: null,
+  //         created_at: new Date().toISOString(),
+  //         updated_at: new Date().toISOString(),
+  //       });
+  //     }
 
-      // Navigate to route-edit with the new data
-      // @ts-ignore
-      router.push({
-        pathname: '/route/route-edit',
-        params: {
-          routeName: searchText,
-          points: JSON.stringify(routePoints),
-          segments: JSON.stringify(segments),
-          isNewRoute: 'true',
-        },
+  //     // Navigate to route-edit with the new data
+  //     // @ts-ignore
+  //     router.push({
+  //       pathname: '/route/route-edit',
+  //       params: {
+  //         routeName: searchText,
+  //         points: JSON.stringify(routePoints),
+  //         segments: JSON.stringify(segments),
+  //         isNewRoute: 'true',
+  //       },
+  //     });
+  //   } catch (error) {
+  //     Alert.alert('Hata', 'Arama yapılamadı.');
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
+
+  const onSearch = async () => {
+  if (searchText.trim().length === 0) return;
+  
+  setIsLoading(true);
+  try {
+    // 1. Backend'den hazır koordinatlı veriyi alıyoruz
+    const result = await fetchLlmRecommendation(searchText);
+
+    // 2. Artık döngü içinde tekrar 'getCoordsFromText' ÇAĞIRMIYORUZ!
+    // Gelen veriyi direkt RoutePoint formatına map'liyoruz.
+    const routePoints: RoutePoint[] = result.recommendations.map((item, idx) => ({
+      id: `llm-${item.id}`, // item.id zaten llm.ts'de oluşuyor
+      route_id: '',
+      position: idx,
+      name: item.title,
+      address: item.description || null,
+      // DİKKAT: [longitude, latitude] sırasıyla geliyor
+      latitude: item.coords[1], 
+      longitude: item.coords[0],
+      tags: null,
+      created_at: new Date().toISOString(),
+    }));
+
+    // 3. Transit segmentlerini oluştur (Çizgiler için)
+    const segments: TransitSegment[] = [];
+    for (let i = 0; i < routePoints.length - 1; i++) {
+      segments.push({
+        id: `seg-${i}-${Date.now()}`,
+        route_id: '',
+        from_point_id: routePoints[i].id,
+        to_point_id: routePoints[i + 1].id,
+        transit_type: 'driving',
+        distance_km: null,
+        duration_minutes: null,
+        notes: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       });
-    } catch (error) {
-      Alert.alert('Hata', 'Arama yapılamadı.');
-    } finally {
-      setIsLoading(false);
     }
-  };
+
+    // 4. Edit sayfasına tüm veriyi hazır gönderiyoruz
+    router.push({
+      pathname: '/route/route-edit',
+      params: {
+        routeName: result.routeName,
+        points: JSON.stringify(routePoints),
+        segments: JSON.stringify(segments),
+        isNewRoute: 'true',
+      },
+    });
+  } catch (error) {
+    console.error('Arama Hatası Detayı:', error);
+    Alert.alert('Hata', 'Rota oluşturulurken bir sorun oluştu.');
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+
+  
 
   return (
     <View style={styles.container}>

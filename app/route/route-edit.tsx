@@ -1,6 +1,6 @@
 import { db } from '@/lib/services/database';
 import { fetchLlmRecommendation } from '@/lib/services/llm';
-import { getCoordsFromText, getRouteDirections } from '@/lib/services/map';
+import { getRouteDirections } from '@/lib/services/map';
 import type { RoutePoint, RoutePointInput, TransitSegment, TransitSegmentInput, TransitType } from '@/lib/types/database';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import {
@@ -269,66 +269,154 @@ export default function RouteEditScreen() {
     return hours > 0 ? `${hours} sa. ${minutes} dk.` : `${minutes} dk.`;
   };
 
-  // AI search for new points
-  const onSearch = async () => {
-    if (searchText.trim().length === 0) return;
+
+
+
+
+  // // AI search for new points
+  // const onSearch = async () => {
+  //   if (searchText.trim().length === 0) return;
     
-    setIsSearching(true);
-    try {
-      const result = await fetchLlmRecommendation(searchText, []);
+  //   setIsSearching(true);
+  //   try {
+  //     const result = await fetchLlmRecommendation(searchText, []);
 
-      const newPoints: RoutePoint[] = [];
-      const startPosition = routePoints.length;
+  //     const newPoints: RoutePoint[] = [];
+  //     const startPosition = routePoints.length;
       
-      for (let idx = 0; idx < result.recommendations.length; idx++) {
-        const item = result.recommendations[idx];
-        const coords = await getCoordsFromText(item.title);
-        newPoints.push({
-          id: `llm-${Math.random().toString(36).substr(2, 9)}`,
-          route_id: routeId || '',
-          position: startPosition + idx,
-          name: item.title,
-          address: item.description || null,
-          latitude: coords?.[1] || null,
-          longitude: coords?.[0] || null,
-          tags: null,
-          created_at: new Date().toISOString(),
-        });
-      }
+  //     for (let idx = 0; idx < result.recommendations.length; idx++) {
+  //       const item = result.recommendations[idx];
+  //       const coords = await getCoordsFromText(item.title);
+  //       newPoints.push({
+  //         id: `llm-${Math.random().toString(36).substr(2, 9)}`,
+  //         route_id: routeId || '',
+  //         position: startPosition + idx,
+  //         name: item.title,
+  //         address: item.description || null,
+  //         latitude: coords?.[1] || null,
+  //         longitude: coords?.[0] || null,
+  //         tags: null,
+  //         created_at: new Date().toISOString(),
+  //       });
+  //     }
 
-      // Append new points to existing
-      const allPoints = [...routePoints, ...newPoints];
-      setRoutePoints(allPoints);
+  //     // Append new points to existing
+  //     const allPoints = [...routePoints, ...newPoints];
+  //     setRoutePoints(allPoints);
 
-      // Create transit segments for new connections
-      const newSegments: TransitSegment[] = [...transitSegments];
-      for (let i = routePoints.length > 0 ? routePoints.length - 1 : 0; i < allPoints.length - 1; i++) {
-        // Skip if this segment already exists
-        if (i < routePoints.length - 1) continue;
+  //     // Create transit segments for new connections
+  //     const newSegments: TransitSegment[] = [...transitSegments];
+  //     for (let i = routePoints.length > 0 ? routePoints.length - 1 : 0; i < allPoints.length - 1; i++) {
+  //       // Skip if this segment already exists
+  //       if (i < routePoints.length - 1) continue;
         
-        newSegments.push({
-          id: `seg-${Date.now()}-${i}`,
-          route_id: routeId || '',
-          from_point_id: allPoints[i].id,
-          to_point_id: allPoints[i + 1].id,
-          transit_type: 'driving',
-          distance_km: null,
-          duration_minutes: null,
-          notes: null,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        });
-      }
-      setTransitSegments(newSegments);
+  //       newSegments.push({
+  //         id: `seg-${Date.now()}-${i}`,
+  //         route_id: routeId || '',
+  //         from_point_id: allPoints[i].id,
+  //         to_point_id: allPoints[i + 1].id,
+  //         transit_type: 'driving',
+  //         distance_km: null,
+  //         duration_minutes: null,
+  //         notes: null,
+  //         created_at: new Date().toISOString(),
+  //         updated_at: new Date().toISOString(),
+  //       });
+  //     }
+  //     setTransitSegments(newSegments);
       
-      setSearchText('');
-      setHasChanges(true);
-    } catch (error) {
-      Alert.alert('Hata', 'Arama yapılamadı.');
-    } finally {
-      setIsSearching(false);
+  //     setSearchText('');
+  //     setHasChanges(true);
+  //   } catch (error) {
+  //     Alert.alert('Hata', 'Arama yapılamadı.');
+  //   } finally {
+  //     setIsSearching(false);
+  //   }
+  // };
+
+  // RouteEditScreen içindeki onSearch fonksiyonunu bununla değiştirin:
+
+const onSearch = async () => {
+  if (searchText.trim().length === 0) return;
+  
+  setIsSearching(true);
+  try {
+    // Yeni llm.ts artık koordinatları da içeren 'recommendations' döner
+    // İkinci parametreyi ([]) kaldırdık çünkü yeni fonksiyonda yok.
+    const result = await fetchLlmRecommendation(searchText);
+
+    if (!result.recommendations || result.recommendations.length === 0) {
+      Alert.alert('Bilgi', 'Uygun durak bulunamadı.');
+      return;
     }
-  };
+
+    const startPosition = routePoints.length;
+    
+    // Artık getCoordsFromText'i burada tekrar çağırmıyoruz, 
+    // çünkü llm.ts içinde bu işlem yapıldı ve 'coords' olarak geldi.
+    const newPoints: RoutePoint[] = result.recommendations.map((item, idx) => ({
+      id: `llm-${Math.random().toString(36).substr(2, 9)}`,
+      route_id: routeId || '',
+      position: startPosition + idx,
+      name: item.title,
+      address: item.description || null,
+      // Dikkat: Mapbox'tan [lon, lat] gelir. Database latitude(1) ve longitude(0) bekler.
+      latitude: item.coords ? item.coords[1] : null, 
+      longitude: item.coords ? item.coords[0] : null,
+      tags: null,
+      created_at: new Date().toISOString(),
+    }));
+
+    // Mevcut durakların üzerine yenilerini ekle
+    const allPoints = [...routePoints, ...newPoints];
+    setRoutePoints(allPoints);
+
+    // Bağlantı segmentlerini (çizgileri) oluştur
+    const newSegments: TransitSegment[] = [...transitSegments];
+    // Eğer önceden durak varsa, son durak ile yeni gelen ilk durak arasına segment ekle
+    for (let i = (routePoints.length > 0 ? routePoints.length - 1 : 0); i < allPoints.length - 1; i++) {
+      // Eğer bu segment zaten varsa ekleme (önceki noktalar arası)
+      if (i < transitSegments.length) continue;
+
+      newSegments.push({
+        id: `seg-${Date.now()}-${i}`,
+        route_id: routeId || '',
+        from_point_id: allPoints[i].id,
+        to_point_id: allPoints[i + 1].id,
+        transit_type: 'walking', // Varsayılan yürüyüş
+        distance_km: null,
+        duration_minutes: null,
+        notes: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+    }
+    
+    setTransitSegments(newSegments);
+    setSearchText('');
+    setHasChanges(true);
+
+    // Eğer yeni nokta geldiyse kamerayı oraya odakla
+    if (newPoints.length > 0 && newPoints[0].longitude && newPoints[0].latitude) {
+       cameraRef.current?.setCamera({
+         centerCoordinate: [newPoints[0].longitude, newPoints[0].latitude],
+         zoomLevel: 14,
+         animationDuration: 1000,
+       });
+    }
+
+  } catch (error) {
+    console.error("Arama hatası detay:", error);
+    Alert.alert('Hata', 'Arama sırasında bir sorun oluştu. Lütfen internet bağlantınızı ve Edge Function ayarlarınızı kontrol edin.');
+  } finally {
+    setIsSearching(false);
+  }
+};
+
+
+
+
+
 
   // Handle drag end - reorder points
   const handleDragEnd = useCallback(({ data }: { data: RoutePoint[] }) => {
