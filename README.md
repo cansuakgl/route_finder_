@@ -26,7 +26,7 @@ Tech stack used:
 
 Developers: Zeynep Cansu Akgül (@cansuakgl), Nesibe Ebrar Çimen (@nesibeebrarcimen) and Gülçin Sağbaş (@gulcin0)
 
-Agentic AI API is currently offline, and (later will be available again). Preview of the Agentic AI tooling structure: 
+Agentic AI API is currently offline (later will be available again). Preview of the Agentic AI tooling structure: 
 <br>
 <img src="assets/images/pathway_diagram.png" width="500" alt="Agent diagram">
 
