@@ -1,33 +1,42 @@
-<h1>Pathway</h1>
+<h3>Pathway</h3>
+
 <p align="center">
-  <img src="assets/images/demo.gif" width="250" alt="Demo GIF">
+  <img src="assets/images/demo.gif" width="250" alt="Pathway demo">
 </p>
-<h3>This is the repository for the Pathway app (route_finder).</h3>
 
-<div></div>
-This app provides intelligent route recommendations tailored to individual users. Leveraging agentic AI, it combines several sources and the users preferences to create tailored routes. The goal is to make navigation seamless, adaptable, and user-centered, offering guidance that feels both reliable and intuitive. 
-<br>
+<h4 align="center">
+An AI-powered route recommendation application built with React, Expo, FastAPI, and LangGraph.
+</h4>
 
-Tech stack used: 
+---
 
--> React 
+### Overview
 
--> EXPO
+Pathway provides intelligent, personalized route recommendations based on each user's preferences and context. By leveraging agentic AI, the application combines multiple data sources with user-defined preferences to generate tailored navigation experiences. The goal is to make route planning more seamless, adaptable, and user-centric by providing recommendations that are both reliable and intuitive.
 
--> GEMINI API for llm responses
+### Tech Stack
 
--> Langchain and langgraph for agents and tools 
+- **Frontend:** React, Expo
+- **Backend:** FastAPI
+- **LLM:** Google Gemini API
+- **AI Frameworks:** LangChain, LangGraph
+- **Database:** PostgreSQL + Supabase Vector Database
+- **Maps & Geocoding:** Mapbox
 
--> FastAPI for the agent API 
+### Developers
 
--> PostgreSQL + vector database via SUPABASE 
+- **Zeynep Cansu Akgül** (@cansuakgl)
+- **Nesibe Ebrar Çimen** (@nesibeebrarcimen)
+- **Gülçin Sağbaş** (@gulcin0)
 
--> MAPBOX for dynamic map visuals and geocoding tasks
+### Status
 
-Developers: Zeynep Cansu Akgül (@cansuakgl), Nesibe Ebrar Çimen (@nesibeebrarcimen) and Gülçin Sağbaş (@gulcin0)
+> **Note:** The Agentic AI API is currently offline and will be available again in a future update.
 
-Agentic AI API is currently offline (later will be available again). Preview of the Agentic AI tooling structure: 
-<br>
-<img src="assets/images/pathway_diagram.png" width="500" alt="Agent diagram">
+#### Agent Architecture Preview
+
+<p align="center">
+  <img src="assets/images/pathway_diagram.png" width="500" alt="Agent architecture diagram">
+</p>
 
 
